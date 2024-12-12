@@ -5,6 +5,7 @@ export class DistanceConverter extends BaseConverter {
   getUnitType(): string {
     return 'Distance';
   }
+
   private static instance: DistanceConverter;
 
   private conversionTable: Record<string, Record<string, number>> = {
@@ -36,14 +37,19 @@ export class DistanceConverter extends BaseConverter {
       feet: 1,
       yard: 0.333333,
     },
-    yard: { meter: 0.9144, centimeter: 91.44, inch: 36, feet: 3, yard: 1 },
+    yard: {
+      meter: 0.9144,
+      centimeter: 91.44,
+      inch: 36,
+      feet: 3,
+      yard: 1,
+    },
   };
 
   private constructor() {
     super();
   }
 
-  // Static method to get the instance of the converter
   public static getInstance(): DistanceConverter {
     if (!DistanceConverter.instance) {
       DistanceConverter.instance = new DistanceConverter();
@@ -52,24 +58,21 @@ export class DistanceConverter extends BaseConverter {
   }
 
   convert(value: number, from: string, to: string): number {
-    // Validate the units
     if (!this.isValidUnit(from) || !this.isValidUnit(to)) {
       throw new Error(`Invalid unit type: ${from} or ${to}`);
     }
 
-    // Handle the case where the units are the same
     if (from === to) {
       return value;
     }
 
-    // Get the conversion rate from the table
     const rate = this.conversionTable[from]?.[to];
 
     if (!rate) {
       throw new Error(`Cannot convert from ${from} to ${to}`);
     }
 
-    // Use mathjs for the conversion
     return math.multiply(value, rate);
   }
 }
+
