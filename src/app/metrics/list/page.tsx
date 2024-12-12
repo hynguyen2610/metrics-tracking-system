@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { Metric, Unit } from '../../models/interfaces';
 import MetricsTable from './metric-table';
@@ -38,15 +38,21 @@ const MetricsPage: React.FC = () => {
   }, [unitType, convertToUnit, selectedUser]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersResponse = await axios.get('/api/users');
-        setUserOptions(usersResponse.data); // [{ username, full_name }]
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-    fetchUsers();
+    const cachedUserOptions = localStorage.getItem('userOptions');
+    if (cachedUserOptions) {
+      setUserOptions(JSON.parse(cachedUserOptions));
+    } else {
+      const fetchUsers = async () => {
+        try {
+          const usersResponse = await axios.get('/api/users');
+          setUserOptions(usersResponse.data); // [{ username, full_name }]
+          localStorage.setItem('userOptions', JSON.stringify(usersResponse.data));
+        } catch (error) {
+          console.error('Error fetching users:', error);
+        }
+      };
+      fetchUsers();
+    }
   }, []);
 
   const handleUnitTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -63,7 +69,9 @@ const MetricsPage: React.FC = () => {
     setSelectedUser(event.target.value);
   };
 
-  const availableUnits = unitOptions.filter((unit) => unit.unit_type === unitType);
+  const availableUnits = useMemo(() => {
+    return unitOptions.filter((unit) => unit.unit_type === unitType);
+  }, [unitOptions, unitType]);
 
   return (
     <div className="container mt-5">
