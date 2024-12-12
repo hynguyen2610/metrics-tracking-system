@@ -20,6 +20,7 @@
     "echarts-for-react": "^3.0.2",
     "flatpickr": "^4.6.13",
     "next": "15.0.4",
+    "node-cache": "^5.1.2",
     "pg": "^8.13.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
