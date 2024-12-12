@@ -1,8 +1,14 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
+### 1. Database setup
+For database setup instructions, please refer to the `metrics-tracking/db-infra/README.md` file.
+We need the database ready first in order to run this app.
 
-First, run the development server:
+### 2. Credendential configuration.
+Check the `.env` file to configure your database credentials and other environment variables.
+
+### 3. Run the development server:
 
 ```bash
 npm run dev
