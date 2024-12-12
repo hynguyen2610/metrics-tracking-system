@@ -1,0 +1,26 @@
+/* Adjust width and padding of select dropdown */
+.form-select {
+    font-size: 0.9rem;  /* Make font size smaller */
+    padding: 0.375rem 1.5rem 0.375rem 0.75rem; /* Add extra padding on the right to make space for the arrow */
+    width: 100%;  /* Make the select take full width of its container */
+    min-width: 200px;  /* Set a minimum width for better alignment */
+  }
+  
+  /* Specifically target smaller selects for form control */
+  .form-select.form-control-sm {
+    font-size: 0.9rem;
+    padding: 0.375rem 1.5rem 0.375rem 0.75rem;
+  }
+  
+  /* Optional: If the dropdown arrow still overlaps, you can use this to style the select arrow */
+  .form-select:focus {
+    border-color: #007bff; /* Blue border when focused */
+    box-shadow: 0 0 0 0.25rem rgba(38, 143, 255, 0.25); /* Optional focus shadow */
+  }
+  
+  /* Increase the space between elements and the dropdown */
+  .form-select + .form-control-sm {
+    margin-top: 0.5rem;
+  }
+  
+  
