@@ -6,8 +6,10 @@ interface MetricsTableProps {
   metrics: Metric[]; // List of metrics to display
 }
 
-const MetricsTable: React.FC<MetricsTableProps> = ({ metrics }) => {
+// eslint-disable-next-line react/display-name
+const MetricsTable: React.FC<MetricsTableProps> = React.memo(({ metrics }) => {
   console.log('Table metrics:', metrics);
+
   return (
     <div className="table-responsive">
       <table className="table table-bordered">
@@ -24,7 +26,7 @@ const MetricsTable: React.FC<MetricsTableProps> = ({ metrics }) => {
         <tbody>
           {metrics.length === 0 ? (
             <tr>
-              <td colSpan={5} className="text-center">
+              <td colSpan={6} className="text-center">
                 No metrics found.
               </td>
             </tr>
@@ -44,6 +46,6 @@ const MetricsTable: React.FC<MetricsTableProps> = ({ metrics }) => {
       </table>
     </div>
   );
-};
+});
 
 export default MetricsTable;
