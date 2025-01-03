@@ -41,15 +41,21 @@ resource "google_compute_instance" "docker-instance" {
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
-    # Update the VM and install Docker
+    # Install Docker if it's not already installed
     sudo apt-get update
     sudo apt-get install -y docker.io
 
-    # Authenticate Docker with Google Cloud to pull from GCR
-    gcloud auth configure-docker --quiet
+    # Authenticate with Artifact Registry using the Google Cloud SDK
+    gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
-    # Pull and run the Docker container from GCR
-    sudo docker run -d --name my-docker-app -p 3000:3000 bluestorm1288/metrics-tracking:latest
+    # Pull the Docker image from Artifact Registry
+    sudo docker pull asia-southeast1-docker.pkg.dev/tuto-requests/metrics-tracking-repo/metrics-tracking:latest
+
+    # Run the Docker container
+    sudo docker run -d --name my-docker-app -p 3000:3000 asia-southeast1-docker.pkg.dev/tuto-requests/metrics-tracking-repo/metrics-tracking:latest
+
+    # Write a log message to indicate the app is ready
+    echo "app read" >> /var/log/app-logs/app-read.log
   EOF
 }
 
@@ -63,7 +69,7 @@ resource "google_compute_firewall" "allow_http" {
     ports    = ["3000"]
   }
 
-  source_ranges = ["0.0.0.0/0"]  # Allows access from anywhere (you can restrict it if needed)
+  source_ranges = ["0.0.0.0/0"] # Allows access from anywhere (you can restrict it if needed)
   target_tags   = ["http-server"]
 }
 
