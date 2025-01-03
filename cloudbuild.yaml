@@ -1,0 +1,25 @@
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/metrics-tracking-repo/metrics-tracking:latest' # Tag the image with the region-specific Artifact Registry URL
+      - '.' # Use current directory as the build context
+
+  # Step 2: Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/metrics-tracking-repo/metrics-tracking:latest' # Push to Artifact Registry in asia-southeast1
+
+  # Step 3: Print the image name at the end
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'container'
+      - 'images'
+      - 'describe'
+      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/metrics-tracking-repo/metrics-tracking:latest'
+
+images:
+  - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/metrics-tracking-repo/metrics-tracking:latest' # Specify the image to push
