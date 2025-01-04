@@ -10,7 +10,7 @@ data "google_project" "current" {}
 # Create the Google Compute Engine instance for PostgreSQL 17
 resource "google_compute_instance" "postgres-instance" {
   name         = "postgres-17"
-  machixne_type = "e2-medium"
+  machine_type = "e2-medium"
   tags         = ["postgres", "db-server"]
 
   allow_stopping_for_update = true
