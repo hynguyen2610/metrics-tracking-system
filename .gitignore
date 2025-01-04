@@ -38,3 +38,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+terraform.tfvars
+db-infra/db/.terraform/providers/registry.terraform.io/hashicorp/google/6.14.1/darwin_amd64/terraform-provider-google_v6.14.1_x5
+db-infra/db/.terraform/providers/registry.terraform.io/hashicorp/google/6.14.1/darwin_amd64/LICENSE.txt
+db-infra/db/gcloud-service-account.json
+.terraform/providers/registry.terraform.io/hashicorp/google/6.14.1/darwin_amd64/terraform-provider-google_v6.14.1_x5
+.env
+gcloud-service-account.json
+.terraform/providers/registry.terraform.io/hashicorp/google/6.14.1/darwin_amd64/LICENSE.txt
