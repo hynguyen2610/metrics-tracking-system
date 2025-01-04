@@ -7,10 +7,10 @@ provider "google" {
 
 # Fetch the current project ID (if you want to dynamically use the project)
 data "google_project" "current" {}
-# Create the Google Compute Engine instance for PostgreSQL 12
+# Create the Google Compute Engine instance for PostgreSQL 17
 resource "google_compute_instance" "postgres-instance" {
-  name         = "postgres-instance"
-  machine_type = "e2-medium"
+  name         = "postgres-17"
+  machixne_type = "e2-medium"
   tags         = ["postgres", "db-server"]
 
   allow_stopping_for_update = true
@@ -32,32 +32,73 @@ resource "google_compute_instance" "postgres-instance" {
   }
 
   metadata_startup_script = <<-EOF
-    #!/bin/bash
-    # Update and install PostgreSQL 12
-    sudo apt-get update
-    sudo apt-get install -y postgresql-12 postgresql-client-12
+  #!/bin/bash
 
-    # Enable PostgreSQL to start on boot
-    sudo systemctl enable postgresql
+    # Update the package list
+    echo "Updating package list..."
+    sudo apt update
 
-    # Start PostgreSQL
-    sudo systemctl start postgresql
+    # Install required prerequisites (for managing repositories over HTTPS)
+    echo "Installing prerequisites..."
+    sudo apt install -y wget ca-certificates
 
-    # Allow external access to PostgreSQL (optional, can be adjusted)
-    sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/12/main/postgresql.conf
-    echo "host    all             all             0.0.0.0/0            md5" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+    # Add PostgreSQL repository key
+    echo "Adding PostgreSQL repository key..."
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 
-    # Restart PostgreSQL to apply changes
-    sudo systemctl restart postgresql
+    # Add the PostgreSQL PGDG repository to your system
+    echo "Adding PostgreSQL repository..."
+    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -c | awk "{print \$2}")-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 
-    # Set a password for the postgres user (for convenience in testing)
-    sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+    # Update the package list again after adding the repository
+    echo "Updating package list after adding PostgreSQL repository..."
+    sudo apt update
+
+    # Install PostgreSQL 17
+    echo "Installing PostgreSQL 17..."
+    sudo apt install -y postgresql-17 postgresql-client-17
+
+    # Verify the installation
+    echo "Verifying the installation..."
+    psql --version
+
+    # Finished
+    echo "PostgreSQL 17 installation completed!"
+
+
+  # Enable PostgreSQL to start on boot
+  sudo systemctl enable postgresql
+
+  # Start PostgreSQL
+  sudo systemctl start postgresql
+
+  # Allow external access to PostgreSQL (optional, can be adjusted)
+  sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/17/main/postgresql.conf
+  echo "host    all             all             0.0.0.0/0            md5" | sudo tee -a /etc/postgresql/17/main/pg_hba.conf
+
+  # Restart PostgreSQL to apply changes
+  sudo systemctl restart postgresql
+
+  # Set a password for the postgres user (for convenience in testing)
+  sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+  # Create the metrics database
+  sudo -u postgres psql -c "CREATE DATABASE metrics;"
+
+  # Restore the metrics database from the backup file (optional)
+  gsutil cp gs://hdn-metrics-bucket/metrics.backup /tmp/metrics.backup
+
+  gsutil cp gs://hdn-metrics-bucket/metrics-script.sql /tmp/
+
+  # Restore the metrics database from the backup file
+  sudo -u postgres pg_restore -d metrics /tmp/metrics.backup
+
   EOF
 }
 
 # Create a firewall rule to allow PostgreSQL traffic on port 5432
-resource "google_compute_firewall" "allow_postgres" {
-  name    = "allow-postgres"
+resource "google_compute_firewall" "allow_postgres_17" {
+  name    = "allow-postgres-17"
   network = "default"
 
   allow {
@@ -65,7 +106,7 @@ resource "google_compute_firewall" "allow_postgres" {
     ports    = ["5432"]
   }
 
-  source_ranges = ["0.0.0.0/0"]  # Adjust this as necessary for your security needs
+  source_ranges = ["0.0.0.0/0"] # Adjust this as necessary for your security needs
   target_tags   = ["postgres", "db-server"]
 }
 
