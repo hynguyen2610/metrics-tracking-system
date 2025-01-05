@@ -8,8 +8,14 @@ provider "google" {
 # Fetch the current project ID (if you want to dynamically use the project)
 data "google_project" "current" {}
 
+# Get the internal IP address of the PostgreSQL instance
+data "google_compute_instance" "postgres-17" {
+  name   = "postgres-17"  # Name of your Postgres instance
+  zone   = "asia-southeast1-a"  # Zone of the Postgres instance
+}
+
 # Create the Google Compute Engine instance for Docker (Next.js)
-resource "google_compute_instance" "docker-instance" {
+resource "google_compute_instance" "docker_instance" {
   name         = "nextjs-instance"
   machine_type = "e2-medium"
   tags         = ["http-server", "https-server"]
@@ -48,16 +54,18 @@ resource "google_compute_instance" "docker-instance" {
   # Pull the Docker image from Artifact Registry
   sudo docker pull asia-southeast1-docker.pkg.dev/tuto-requests/metrics-tracking-repo/metrics-tracking:latest
 
-  # Run the Docker container
+  # Fetch the internal IP of the PostgreSQL instance (provided via metadata)
+  POSTGRES_HOST="${data.google_compute_instance.postgres-17.network_interface[0].network_ip}"
+
+  # Run the Docker container with the PostgreSQL internal IP passed as DB_HOST
   sudo docker run -d --name my-docker-app -p 3000:3000 \
-    -e DB_HOST="10.148.0.45" \
-    -e DB_USER=${var.db_user} -e DB_PASSWORD=${var.db_password} -e DB_PORT=${var.db_port} -e DB_NAME=${var.db_name} \
+    -e DB_HOST="$POSTGRES_HOST" \
+    -e DB_USER="${var.db_user}" -e DB_PASSWORD="${var.db_password}" -e DB_PORT="${var.db_port}" -e DB_NAME="${var.db_name}" \
     asia-southeast1-docker.pkg.dev/tuto-requests/metrics-tracking-repo/metrics-tracking:latest
 
   # Write a log message to indicate the app is ready
   echo "app ready" >> /var/log/app-logs/app-read.log
 EOF
-
 }
 
 # Create a firewall rule to allow HTTP traffic on port 3000
@@ -76,5 +84,10 @@ resource "google_compute_firewall" "allow_http" {
 
 # Output the external IP of the Next.js instance
 output "nextjs_ip" {
-  value = google_compute_instance.docker-instance.network_interface[0].access_config[0].nat_ip
+  value = google_compute_instance.docker_instance.network_interface[0].access_config[0].nat_ip
+}
+
+# Output the internal IP of the PostgreSQL instance
+output "postgres_ip" {
+  value = data.google_compute_instance.postgres-17.network_interface[0].network_ip
 }
